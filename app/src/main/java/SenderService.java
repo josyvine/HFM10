@@ -164,7 +164,6 @@ public class SenderService extends Service {
         dropRequest.put("timestamp", System.currentTimeMillis());
         dropRequest.put("receiverId", null);
         
-        // --- NEW: Add empty fields for the receiver to fill in ---
         dropRequest.put("receiverPublicIp", null);
         dropRequest.put("receiverPublicPort", null);
 
@@ -234,9 +233,6 @@ public class SenderService extends Service {
                     String status = snapshot.getString("status");
                     Log.d(TAG, "Drop request status changed to: " + status);
 
-                    // --- THIS IS THE NEW LOGIC FOR TCP HOLE PUNCHING ---
-                    // When the receiver accepts and updates the document with their IP,
-                    // the sender will see it and try to connect back.
                     if ("accepted".equals(status)) {
                         String receiverIp = snapshot.getString("receiverPublicIp");
                         Long receiverPortLong = snapshot.getLong("receiverPublicPort");
@@ -245,7 +241,6 @@ public class SenderService extends Service {
                             final String finalReceiverIp = receiverIp;
                             final int finalReceiverPort = receiverPortLong.intValue();
                             
-                            // Start the "punch" attempt on a new thread
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -276,18 +271,13 @@ public class SenderService extends Service {
         });
     }
 
-    // --- NEW: Method to perform the TCP Hole Punch ---
     private void punchHole(String receiverIp, int receiverPort) {
         Socket punchSocket = null;
         try {
-            // We create a new socket and try to connect. This is the "punch".
-            // We expect this to fail, and that is okay. Its only purpose is
-            // to create a temporary rule in the sender's NAT/firewall.
             Log.d(TAG, "Attempting to punch hole to " + receiverIp + ":" + receiverPort);
             punchSocket = new Socket(receiverIp, receiverPort);
             Log.d(TAG, "Hole punch connection succeeded (this is rare).");
         } catch (IOException e) {
-            // This is the expected outcome. The error is ignored.
             Log.d(TAG, "Hole punch connection failed as expected: " + e.getMessage());
         } finally {
             if (punchSocket != null) {
@@ -525,7 +515,8 @@ public class SenderService extends Service {
         }
     }
     
-    private static class StunClient {
+    // --- THIS IS THE FIX: Changed from private to public ---
+    public static class StunClient {
         private static final String STUN_SERVER = "stun.l.google.com";
         private static final int STUN_PORT = 19302;
 
