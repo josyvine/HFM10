@@ -81,10 +81,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
 
-    // === JLBTORRENT (STABLE FORK - REPLACES LIBTORRENT4J) ===
-    // Add repo in project-level build.gradle: maven { url 'https://dl.frostwire.com/maven' }
-    def jlibtorrentVersion = '2.0.12.5'  // Latest stable Nov 2025
-    implementation "com.frostwire:jlibtorrent:$jlibtorrentVersion"
-    implementation "com.frostwire:jlibtorrent-android-arm64:$jlibtorrentVersion"
-    implementation "com.frostwire:jlibtorrent-android-arm:$jlibtorrentVersion"
+    // TORRENT CLIENT
+    implementation "com.frostwire:jlibtorrent-android-arm64:1.2.17.0"
 }
